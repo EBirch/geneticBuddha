@@ -19,18 +19,15 @@ class Node{
 
 class TerminalNode : public Node{
 	public:
-		enum Type{
-			Variable = 0,
-			Constant = 1
-		};
-		Type type;
+		int type;
 		double val;
-		TerminalNode(Type type, double val = 0.0);
+		TerminalNode(int type, double val = 0.0);
 		virtual double eval(double x) const;
 };
 
 class UnaryOpNode : public Node{
 	public:
+		int type;
 		std::function<double(double)> op;
 		UnaryOpNode(int type);
 		virtual double eval(double x) const;
@@ -38,6 +35,7 @@ class UnaryOpNode : public Node{
 
 class BinaryOpNode : public Node{
 	public:
+		int type;
 		std::function<double(double, double)> op;
 		BinaryOpNode(int type);
 		virtual double eval(double x) const;
