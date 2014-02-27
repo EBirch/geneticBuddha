@@ -27,35 +27,18 @@ class TerminalNode : public Node{
 
 class UnaryOpNode : public Node{
 	public:
-		enum Type{
-			Neg = 0,
-			Cos = 1,
-			Sin = 2,
-			Tan = 3,
-			Sqrt = 4,
-			Log = 5
-		};
-		Type type;
 		std::shared_ptr<Node> child;
 		std::function<double(double)> op;
-		UnaryOpNode(Type type);
+		UnaryOpNode(int type);
 		virtual double eval(double x) const;
 };
 
 class BinaryOpNode : public Node{
 	public:
-		enum Type{
-			Sub = 0,
-			Add = 1,
-			Mult = 2,
-			Div = 3,
-			Pow = 4
-		};
-		Type type;
 		std::shared_ptr<Node> leftChild;
 		std::shared_ptr<Node> rightChild;
 		std::function<double(double, double)> op;
-		BinaryOpNode(Type type);
+		BinaryOpNode(int type);
 		virtual double eval(double x) const;
 };
 

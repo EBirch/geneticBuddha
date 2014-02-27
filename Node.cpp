@@ -35,7 +35,7 @@ double TerminalNode::eval(double x) const{
 	return type == TerminalNode::Type::Variable ? x : val;
 }
 
-UnaryOpNode::UnaryOpNode(Type type)
+UnaryOpNode::UnaryOpNode(int type)
 	:op(unaryOps[type])
 {}
 
@@ -43,7 +43,7 @@ double UnaryOpNode::eval(double x) const{
 	return op(child->eval(x));
 }
 
-BinaryOpNode::BinaryOpNode(Type type)
+BinaryOpNode::BinaryOpNode(int type)
 	:op(binaryOps[type])
 {}
 
@@ -55,12 +55,12 @@ std::shared_ptr<Node> getRandomTree(){
 	switch(nodeDist(rng)){
 		case 0: return std::make_shared<TerminalNode>((TerminalNode::Type)termDist(rng), constDist(rng));
 		case 1: {
-			auto temp = std::make_shared<UnaryOpNode>((UnaryOpNode::Type)unaryDist(rng));
+			auto temp = std::make_shared<UnaryOpNode>(unaryDist(rng));
 			temp->child = getRandomTree();
 			return temp;
 		}
 		case 2: {
-			auto temp = std::make_shared<BinaryOpNode>((BinaryOpNode::Type)binaryDist(rng));
+			auto temp = std::make_shared<BinaryOpNode>(binaryDist(rng));
 			temp->leftChild = getRandomTree();
 			temp->rightChild = getRandomTree();
 			return temp;
