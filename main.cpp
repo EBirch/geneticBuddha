@@ -9,7 +9,7 @@ int main(int argc, char **argv){
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 	auto tree = getRandomTree();
-	std::cout<<tree->eval(0)<<std::endl;
+	std::cout<<tree->eval(1)<<std::endl;
 
 	MPI_Finalize();
 }

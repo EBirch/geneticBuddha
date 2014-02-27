@@ -31,7 +31,6 @@ class TerminalNode : public Node{
 
 class UnaryOpNode : public Node{
 	public:
-		// std::shared_ptr<Node> child;
 		std::function<double(double)> op;
 		UnaryOpNode(int type);
 		virtual double eval(double x) const;
@@ -39,8 +38,6 @@ class UnaryOpNode : public Node{
 
 class BinaryOpNode : public Node{
 	public:
-		// std::shared_ptr<Node> leftChild;
-		// std::shared_ptr<Node> rightChild;
 		std::function<double(double, double)> op;
 		BinaryOpNode(int type);
 		virtual double eval(double x) const;

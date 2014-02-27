@@ -57,7 +57,7 @@ std::shared_ptr<Node> getRandomTree(){
 		case 0: return std::make_shared<TerminalNode>((TerminalNode::Type)termDist(rng), constDist(rng));
 		case 1: {
 			auto temp = std::make_shared<UnaryOpNode>(unaryDist(rng));
-			temp->children[0] = getRandomTree();
+			std::generate(temp->children.begin(), temp->children.end(), [&](){return getRandomTree();});
 			return temp;
 		}
 		case 2: {
@@ -66,12 +66,4 @@ std::shared_ptr<Node> getRandomTree(){
 			return temp;
 		}
 	}
-}
-
-void crossover(std::shared_ptr<Node> first, std::shared_ptr<Node> second){
-	//use breadth-first here
-}
-
-void mutate(std::shared_ptr<Node> tree){
-
 }
