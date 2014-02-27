@@ -17,13 +17,26 @@ std::vector<std::function<double(double)>> unaryOps {
 	[&](double val){return log(val);}
 };
 
+TerminalNode::TerminalNode(Type type, double val)
+	:type(type)
+	,val(val)
+{}
+
 double TerminalNode::eval(double x){
 	return type == TerminalNode::Type::Variable ? x : val;
 }
 
+BinaryOpNode::BinaryOpNode(Type type)
+	:op(binaryOps[type])
+{}
+
 double BinaryOpNode::eval(double x){
 	return op(leftChild->eval(x), rightChild->eval(x));
 }
+
+UnaryOpNode::UnaryOpNode(Type type)
+	:op(unaryOps[type])
+{}
 
 double UnaryOpNode::eval(double x){
 	return op(child->eval(x));
