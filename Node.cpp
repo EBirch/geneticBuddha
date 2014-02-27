@@ -1,15 +1,5 @@
 #include "Node.h"
 
-#include <limits>
-
-std::vector<std::function<double(double, double)>> binaryOps {
-	[&](double left, double right){return left - right;},
-	[&](double left, double right){return left + right;},
-	[&](double left, double right){return left * right;},
-	[&](double left, double right){return left / right;},
-	[&](double left, double right){return pow(left, right);}
-};
-
 std::vector<std::function<double(double)>> unaryOps {
 	[&](double val){return -val;},
 	[&](double val){return cos(val);},
@@ -19,15 +9,24 @@ std::vector<std::function<double(double)>> unaryOps {
 	[&](double val){return log(val);}
 };
 
+std::vector<std::function<double(double, double)>> binaryOps {
+	[&](double left, double right){return left - right;},
+	[&](double left, double right){return left + right;},
+	[&](double left, double right){return left * right;},
+	[&](double left, double right){return left / right;},
+	[&](double left, double right){return pow(left, right);}
+};
+
 std::mt19937 rng(time(NULL));
 std::uniform_int_distribution<int> nodeDist(0, 2);
 std::uniform_int_distribution<int> termDist(0, 1);
-std::uniform_int_distribution<int> unaryDist(0, 5);
-std::uniform_int_distribution<int> binaryDist(0, 4);
+std::uniform_int_distribution<int> unaryDist(0, unaryOps.size() - 1);
+std::uniform_int_distribution<int> binaryDist(0, binaryOps.size() - 1);
 std::uniform_real_distribution<double> constDist(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
 
 TerminalNode::TerminalNode(Type type, double val)
-	:type(type)
+	:Node(0)
+	,type(type)
 	,val(val)
 {}
 
@@ -36,19 +35,21 @@ double TerminalNode::eval(double x) const{
 }
 
 UnaryOpNode::UnaryOpNode(int type)
-	:op(unaryOps[type])
+	:Node(1)
+	,op(unaryOps[type])
 {}
 
 double UnaryOpNode::eval(double x) const{
-	return op(child->eval(x));
+	return op(children[0]->eval(x));
 }
 
 BinaryOpNode::BinaryOpNode(int type)
-	:op(binaryOps[type])
+	:Node(2)
+	,op(binaryOps[type])
 {}
 
 double BinaryOpNode::eval(double x) const{
-	return op(leftChild->eval(x), rightChild->eval(x));
+	return op(children[0]->eval(x), children[1]->eval(x));
 }
 
 std::shared_ptr<Node> getRandomTree(){
@@ -56,14 +57,21 @@ std::shared_ptr<Node> getRandomTree(){
 		case 0: return std::make_shared<TerminalNode>((TerminalNode::Type)termDist(rng), constDist(rng));
 		case 1: {
 			auto temp = std::make_shared<UnaryOpNode>(unaryDist(rng));
-			temp->child = getRandomTree();
+			temp->children[0] = getRandomTree();
 			return temp;
 		}
 		case 2: {
 			auto temp = std::make_shared<BinaryOpNode>(binaryDist(rng));
-			temp->leftChild = getRandomTree();
-			temp->rightChild = getRandomTree();
+			std::generate(temp->children.begin(), temp->children.end(), [&](){return getRandomTree();});
 			return temp;
 		}
 	}
+}
+
+void crossover(std::shared_ptr<Node> first, std::shared_ptr<Node> second){
+	//use breadth-first here
+}
+
+void mutate(std::shared_ptr<Node> tree){
+
 }
