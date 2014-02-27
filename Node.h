@@ -3,6 +3,8 @@
 
 #include <memory>
 #include <functional>
+#include <vector>
+#include <cmath>
 
 class Node{
 	public:
@@ -22,6 +24,13 @@ class TerminalNode : public Node{
 
 class BinaryOpNode : public Node{
 	public:
+		enum Type{
+			Sub = 0,
+			Add = 1,
+			Mult = 2,
+			Div = 3,
+			Pow = 4
+		};
 		std::shared_ptr<Node> leftChild;
 		std::shared_ptr<Node> rightChild;
 		std::function<double(double, double)> op;
@@ -30,6 +39,14 @@ class BinaryOpNode : public Node{
 
 class UnaryOpNode : public Node{
 	public:
+		enum Type{
+			Neg = 0,
+			Cos = 1,
+			Sin = 2,
+			Tan = 3,
+			Sqrt = 4,
+			Log = 5
+		};
 		std::shared_ptr<Node> child;
 		std::function<double(double)> op;
 		virtual double eval(double x);
