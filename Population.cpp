@@ -1,12 +1,14 @@
 #include "Population.h"
 
-Population::Population(std::vector<std::shared_ptr<Node>> population, double crossoverRate, double mutateRate)
-	:population(population)
+Population::Population(int popSize, double crossoverRate, double mutateRate)
+	:population(popSize)
 	,crossoverRate(crossoverRate)
 	,mutateRate(mutateRate)
 	,rng(time(NULL))
 	,dist(0, 1)
-{}
+{
+	std::generate(population.begin(), population.end(), [&](){return std::make_pair(0, getRandomTree());});
+}
 
 void Population::crossover(std::shared_ptr<Node> &first, std::shared_ptr<Node> &second){
 	std::queue<std::shared_ptr<Node>> firstQueue;
