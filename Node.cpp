@@ -23,7 +23,6 @@ std::uniform_int_distribution<int> nodeDist(0, 2);
 std::uniform_int_distribution<int> termDist(0, 1);
 std::uniform_int_distribution<int> unaryDist(0, unaryOps.size() - 1);
 std::uniform_int_distribution<int> binaryDist(0, binaryOps.size() - 1);
-// std::uniform_real_distribution<double> constDist(std::numeric_limits<double>::min(), std::numeric_limits<double>::max());
 std::uniform_real_distribution<double> constDist(-10, 10);
 
 TerminalNode::TerminalNode(int type, double val)
