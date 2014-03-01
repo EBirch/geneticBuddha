@@ -40,10 +40,10 @@ void Population::crossover(std::shared_ptr<Node> &first, std::shared_ptr<Node> &
 }
 
 void Population::mutate(std::shared_ptr<Node> &tree){
-	if(dist(rng) <= mutateRate){
-		//mutate here
-	}
 	for(auto &child : tree->children){
+		if(dist(rng) <= mutateRate){
+			child = getRandomTree();
+		}
 		mutate(child);
 	}
 }
