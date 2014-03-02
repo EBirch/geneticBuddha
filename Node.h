@@ -9,17 +9,19 @@
 #include <ctime>
 #include <limits>
 #include <algorithm>
+#include <string>
+#include <sstream>
 
 class Node{
 	public:
+		int type;
 		std::vector<std::shared_ptr<Node>> children;
 		virtual double eval(double x, double y) const = 0;
-		Node(int numChildren):children(numChildren){};
+		Node(int numChildren, int type):children(numChildren), type(type){};
 };
 
 class TerminalNode : public Node{
 	public:
-		int type;
 		double val;
 		static std::uniform_int_distribution<int> termDist;
 		static std::uniform_real_distribution<double> constDist;
@@ -30,7 +32,6 @@ class TerminalNode : public Node{
 
 class UnaryOpNode : public Node{
 	public:
-		int type;
 		std::function<double(double)> op;
 		static std::uniform_int_distribution<int> unaryDist;
 		static std::shared_ptr<Node> randomUnaryOpNode();
@@ -40,7 +41,6 @@ class UnaryOpNode : public Node{
 
 class BinaryOpNode : public Node{
 	public:
-		int type;
 		std::function<double(double, double)> op;
 		static std::uniform_int_distribution<int> binaryDist;
 		static std::shared_ptr<Node> randomBinaryOpNode();
@@ -48,6 +48,8 @@ class BinaryOpNode : public Node{
 		virtual double eval(double x, double y) const;
 };
 
+std::string serializeTree(std::shared_ptr<Node> tree);
+std::shared_ptr<Node> deserializeTree(std::stringstream &tree);
 std::shared_ptr<Node> getRandomTree();
 
 #endif

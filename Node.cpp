@@ -26,8 +26,7 @@ std::uniform_int_distribution<int> UnaryOpNode::unaryDist(0, unaryOps.size() - 1
 std::uniform_int_distribution<int> BinaryOpNode::binaryDist(0, binaryOps.size() - 1);
 
 TerminalNode::TerminalNode(int type, double val)
-	:Node(0)
-	,type(type)
+	:Node(0 ,type)
 	,val(val)
 {}
 
@@ -40,8 +39,7 @@ std::shared_ptr<Node> TerminalNode::randomTerminalNode(){
 }
 
 UnaryOpNode::UnaryOpNode(int type)
-	:Node(1)
-	,type(type)
+	:Node(1, type)
 	,op(unaryOps[type])
 {}
 
@@ -54,8 +52,7 @@ std::shared_ptr<Node> UnaryOpNode::randomUnaryOpNode(){
 }
 
 BinaryOpNode::BinaryOpNode(int type)
-	:Node(2)
-	,type(type)
+	:Node(2, type)
 	,op(binaryOps[type])
 {}
 
@@ -80,5 +77,43 @@ std::shared_ptr<Node> getRandomTree(){
 			std::generate(temp->children.begin(), temp->children.end(), [&](){return getRandomTree();});
 			return temp;
 		}
+	}
+}
+
+std::string serializeTree(std::shared_ptr<Node> tree){
+	if(tree->children.size() == 0){
+		auto temp = reinterpret_cast<TerminalNode*>(tree.get());
+		return "0 " + std::to_string(temp->type) + " " + std::to_string(temp->val) + " ";
+	}
+	if(tree->children.size() == 1){
+		auto childString = serializeTree(tree->children[0]);
+		return "1 " + std::to_string(tree->type) + " " + childString;
+	}
+	if(tree->children.size() == 2){
+		auto leftString = serializeTree(tree->children[0]);
+		auto rightString = serializeTree(tree->children[1]);
+		return "2 " + std::to_string(tree->type) + " " + leftString + rightString;
+	}
+}
+
+std::shared_ptr<Node> deserializeTree(std::stringstream &tree){
+	int nodeType;
+	int type;
+	tree >> nodeType >> type;
+	if(nodeType == 0){
+		double val;
+		tree >> val;
+		return std::make_shared<TerminalNode>(type, val);
+	}
+	if(nodeType == 1){
+		auto temp = std::make_shared<UnaryOpNode>(type);
+		temp->children[0] = deserializeTree(tree);
+		return temp;
+	}
+	if(nodeType == 2){
+		auto temp = std::make_shared<BinaryOpNode>(type);
+		temp->children[0] = deserializeTree(tree);
+		temp->children[1] = deserializeTree(tree);
+		return temp;
 	}
 }

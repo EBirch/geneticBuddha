@@ -1,4 +1,8 @@
 #include "Population.h"
+#include <mpi.h>
+
+extern int processors;
+extern int rank;
 
 Population::Population(int popSize, double crossoverRate, double mutateRate)
 	:population(popSize)
@@ -6,8 +10,9 @@ Population::Population(int popSize, double crossoverRate, double mutateRate)
 	,mutateRate(mutateRate)
 	,rng(time(NULL))
 	,dist(0, 1)
+	,best(0, "")
 {
-	std::generate(population.begin(), population.end(), [&](){return std::make_pair(0, getRandomTree());});
+	std::generate(population.begin(), population.end(), [&](){return std::make_pair(0.0, getRandomTree());});
 }
 
 void Population::crossover(std::shared_ptr<Node> &first, std::shared_ptr<Node> &second){
@@ -50,10 +55,71 @@ void Population::mutate(std::shared_ptr<Node> &tree){
 	}
 }
 
-double Population::score(std::shared_ptr<Node> &tree){
-	return 0.0;
+void Population::score(std::pair<float, std::shared_ptr<Node>> &tree){
 }
 
 void Population::doGeneration(){
+	std::vector<std::pair<float, std::shared_ptr<Node>>> newPop;
+	for(auto &func : population){
+		score(func);
+	}
+	std::sort(population.begin(), population.end());
+	if(population[0].first > best.first){
+		best = std::make_pair(population[0].first, serializeTree(population[0].second));
+	}
+	for(int i = 0; i < population.size() - 1; i += 2){
+		crossover(population[i].second, population[i + 1].second);
+		mutate(population[i].second);
+		mutate(population[i + 1].second);
+		newPop.push_back(std::make_pair(0.0, population[i].second));
+		newPop.push_back(std::make_pair(0.0, population[i + 1].second));
+	}
+	migrate(newPop);
+	population = newPop;
+}
 
+void Population::migrate(std::vector<std::pair<float, std::shared_ptr<Node>>> &newPop){
+	std::uniform_real_distribution<double> migrateDist(0, 1);
+	int next = (rank + 1) % processors;
+	int prev = (rank - 1 < 0) ? processors - 1 : rank - 1;
+	std::vector<std::pair<float, std::shared_ptr<Node>>> tempPop;
+	if(rank % 2 == 0){
+		for(int i = 0; i < newPop.size() / 10; ++i){
+			int index = migrateDist(rng) * newPop.size();
+			auto treeString = serializeTree(newPop[index].second);
+			int size = treeString.length();
+			MPI_Send(&size, 1, MPI_INT, next, 0, MPI_COMM_WORLD);
+			MPI_Send(&treeString[0], treeString.length(), MPI_CHAR, next, 0, MPI_COMM_WORLD);
+		}
+		for(int i = 0; i < newPop.size() / 10; ++i){
+			int size = 0;
+			MPI_Recv(&size, 1, MPI_INT, prev, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			std::string temp;
+			temp.resize(size);
+			MPI_Recv(&temp[0], size, MPI_CHAR, next, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			std::stringstream stream(temp);
+			tempPop.push_back(std::make_pair(0.0, deserializeTree(stream)));
+		}	
+	}
+	else{
+		for(int i = 0; i < newPop.size() / 10; ++i){
+			int size = 0;
+			MPI_Recv(&size, 1, MPI_INT, prev, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			std::string temp;
+			temp.resize(size);
+			MPI_Recv(&temp[0], size, MPI_CHAR, prev, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			std::stringstream stream(temp);
+			tempPop.push_back(std::make_pair(0.0, deserializeTree(stream)));
+		}
+		for(int i = 0; i < newPop.size() / 10; ++i){
+			int index = migrateDist(rng) * newPop.size();
+			auto treeString = serializeTree(newPop[index].second);
+			int size = treeString.length();
+			MPI_Send(&size, 1, MPI_INT, next, 0, MPI_COMM_WORLD);
+			MPI_Send(&treeString[0], treeString.length(), MPI_CHAR, prev, 0, MPI_COMM_WORLD);
+		}	
+	}
+	for(auto &thing : tempPop){
+		newPop.push_back(thing);
+	}
 }
