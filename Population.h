@@ -15,8 +15,8 @@ class Population{
 		Population(int popSize, double crossoverRate, double mutateRate);
 		void crossover(std::shared_ptr<Node> &first, std::shared_ptr<Node> &second);
 		void mutate(std::shared_ptr<Node> &tree);
-		void score(std::pair<float, std::shared_ptr<Node>> &tree);
-		void doGeneration();
+		void score(std::vector<std::tuple<int, int, int>> &points, std::pair<float, std::shared_ptr<Node>> &tree);
+		void doGeneration(std::vector<std::tuple<int, int, int>> &points);
 		void migrate(std::vector<std::pair<float, std::shared_ptr<Node>>> &newPop);
 };
 

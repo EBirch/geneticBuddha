@@ -10,7 +10,7 @@ Population::Population(int popSize, double crossoverRate, double mutateRate)
 	,mutateRate(mutateRate)
 	,rng(time(NULL))
 	,dist(0, 1)
-	,best(0, "")
+	,best(std::numeric_limits<float>::max(), "")
 {
 	std::generate(population.begin(), population.end(), [&](){return std::make_pair(0.0, getRandomTree());});
 }
@@ -55,16 +55,21 @@ void Population::mutate(std::shared_ptr<Node> &tree){
 	}
 }
 
-void Population::score(std::pair<float, std::shared_ptr<Node>> &tree){
+void Population::score(std::vector<std::tuple<int, int, int>> &points, std::pair<float, std::shared_ptr<Node>> &tree){
+	double error = 0.0;
+	for(auto &point : points){
+		error += abs(tree.second->eval(std::get<0>(point), std::get<1>(point)) - std::get<2>(point));
+	}
+	tree.first = error;
 }
 
-void Population::doGeneration(){
+void Population::doGeneration(std::vector<std::tuple<int, int, int>> &points){
 	std::vector<std::pair<float, std::shared_ptr<Node>>> newPop;
 	for(auto &func : population){
-		score(func);
+		score(points, func);
 	}
 	std::sort(population.begin(), population.end());
-	if(population[0].first > best.first){
+	if(population[0].first < best.first){
 		best = std::make_pair(population[0].first, serializeTree(population[0].second));
 	}
 	for(int i = 0; i < population.size() - 1; i += 2){
@@ -96,7 +101,7 @@ void Population::migrate(std::vector<std::pair<float, std::shared_ptr<Node>>> &n
 			MPI_Recv(&size, 1, MPI_INT, prev, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			std::string temp;
 			temp.resize(size);
-			MPI_Recv(&temp[0], size, MPI_CHAR, next, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Recv(&temp[0], size, MPI_CHAR, prev, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			std::stringstream stream(temp);
 			tempPop.push_back(std::make_pair(0.0, deserializeTree(stream)));
 		}	
@@ -116,7 +121,7 @@ void Population::migrate(std::vector<std::pair<float, std::shared_ptr<Node>>> &n
 			auto treeString = serializeTree(newPop[index].second);
 			int size = treeString.length();
 			MPI_Send(&size, 1, MPI_INT, next, 0, MPI_COMM_WORLD);
-			MPI_Send(&treeString[0], treeString.length(), MPI_CHAR, prev, 0, MPI_COMM_WORLD);
+			MPI_Send(&treeString[0], treeString.length(), MPI_CHAR, next, 0, MPI_COMM_WORLD);
 		}	
 	}
 	for(auto &thing : tempPop){
