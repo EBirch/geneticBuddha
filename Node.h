@@ -51,5 +51,6 @@ class BinaryOpNode : public Node{
 std::string serializeTree(std::shared_ptr<Node> tree);
 std::shared_ptr<Node> deserializeTree(std::stringstream &tree);
 std::shared_ptr<Node> getRandomTree();
+int height(std::shared_ptr<Node> tree);
 
 #endif

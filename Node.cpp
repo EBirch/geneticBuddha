@@ -117,3 +117,14 @@ std::shared_ptr<Node> deserializeTree(std::stringstream &tree){
 		return temp;
 	}
 }
+
+int height(std::shared_ptr<Node> tree){
+	if(tree->children.size() == 0){
+		return 0;
+	}
+	int sum = 0;
+	for(auto &child : tree->children){
+		sum += height(child);
+	}
+	return sum + 1;
+}

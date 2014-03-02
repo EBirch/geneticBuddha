@@ -60,6 +60,8 @@ void Population::score(std::vector<std::tuple<int, int, int>> &points, std::pair
 	for(auto &point : points){
 		error += abs(tree.second->eval(std::get<0>(point), std::get<1>(point)) - std::get<2>(point));
 	}
+	error /= 10000;
+	error *= height(tree.second);
 	tree.first = error;
 }
 

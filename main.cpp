@@ -30,7 +30,7 @@ int main(int argc, char **argv){
 	file.close();
 
 	Population pop(10, 0.5, 0.01);
-	for(int i = 0; i < 10; ++i){
+	for(int i = 0; i < 5; ++i){
 		pop.doGeneration(points);
 	}
 	std::vector<std::pair<float, std::shared_ptr<Node>>> bestResults;
